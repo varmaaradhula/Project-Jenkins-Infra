@@ -7,7 +7,7 @@ pipeline{
         TF_PATH = 'terraform'
         S3_KEY = 'terraform/state/terraform.tfstate'
         AWS_REGION = 'eu-west-2'
-        AWS_CREDENTIALS = credentials('awscreds')
+       // AWS_CREDENTIALS = credentials('awscreds')
         TERRAFORM_APPLY_STATUS = 'false'
         GET_KUBECONFIG_STATUS = 'false'
     }
@@ -27,7 +27,7 @@ pipeline{
             steps {
                 withCredentials([
                     [$class: 'AmazonWebServicesCredentialsBinding', 
-                     credentialsId: "${AWS_CREDENTIALS}"] // Replace with your Jenkins credential ID
+                     credentialsId: 'awscreds'] // Replace with your Jenkins credential ID
                 ]) {
                     script {
                         // AWS credentials will be available as environment variables
