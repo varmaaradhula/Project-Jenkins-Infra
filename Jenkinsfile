@@ -76,7 +76,6 @@ pipeline{
                     script{
                         sh '''
                         terraform plan \
-                          -var="aws_region=$AWS_REGION" \
                           -out=tfplan.out
                         '''
                     }
