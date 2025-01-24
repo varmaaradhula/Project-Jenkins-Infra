@@ -45,32 +45,42 @@ pipeline{
         stage('Intiate Terraform'){
             steps {
                 echo 'Intiating Terraform'
-                dir("${TF_PATH}")
+                dir("${TF_PATH}"){
+
+                    script{
                         sh '''
                         terraform init \
                           -backend-config="bucket=${S3_BUCKET}" \
                           -backend-config="key=terraform/state.tfstate" \
                           -backend-config="region=$AWS_REGION"
                           '''
+                    }
+                }
             }
         }
         stage('Terraform Validate') {
             steps {
                 echo 'Validating Terraform configuration...'
-                dir("${TF_PATH}")
+                dir("${TF_PATH}"){
+                    script{
                 sh 'terraform validate'
+                    }
+                }
             }
         }
 
         stage('Terraform Plan') {
             steps {
                 echo 'Planning Terraform and getting output file'
-                dir("${TF_PATH}")
+                dir("${TF_PATH}"){
+                    script{
                         sh '''
                         terraform plan \
                           -var="aws_region=$AWS_REGION" \
                           -out=tfplan.out
                         '''
+                    }
+                }
                     }
                 }
         }
