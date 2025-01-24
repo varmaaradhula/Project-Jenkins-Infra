@@ -45,7 +45,7 @@ pipeline{
         stage('Intiate Terraform'){
             steps {
                 echo 'Intiating Terraform'
-                script {
+                dir("${TF_PATH}")
                         sh '''
                         terraform init \
                           -backend-config="bucket=${S3_BUCKET}" \
@@ -54,22 +54,18 @@ pipeline{
                           '''
             }
         }
-        }
         stage('Terraform Validate') {
             steps {
                 echo 'Validating Terraform configuration...'
                 dir("${TF_PATH}")
-                script {
                 sh 'terraform validate'
             }
-        }
         }
 
         stage('Terraform Plan') {
             steps {
                 echo 'Planning Terraform and getting output file'
                 dir("${TF_PATH}")
-                    script {
                         sh '''
                         terraform plan \
                           -var="aws_region=$AWS_REGION" \
@@ -77,6 +73,5 @@ pipeline{
                         '''
                     }
                 }
-            }
         }
 }
