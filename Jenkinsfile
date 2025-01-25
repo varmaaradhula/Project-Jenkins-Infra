@@ -52,7 +52,7 @@ pipeline{
                         terraform init \
                           -backend-config="bucket=${S3_BUCKET}" \
                           -backend-config="key=terraform/state.tfstate" \
-                          -backend-config="region=$AWS_REGION"
+                          -backend-config="region=${AWS_REGION}"
                           '''
                     }
                 }
@@ -82,5 +82,63 @@ pipeline{
                 }
                     }
                 }
+
+        stage('Terraform Apply') {
+            steps {
+                echo ' Applying terraform plan'
+                dir("${TF_PATH}"){
+                    script{
+                sh 'terraform apply tfplan.out'
+                    }
+                }
+            }
+            post {
+                success {
+                    script {
+                        // Set a shared variable to indicate success
+                        currentBuild.description = 'Terraform Apply Success'
+                        env.TERRAFORM_APPLY_STATUS = 'true'
+        }
+                }
+            }
+        }
+
+        stage('Retrieve Kubeconfig') {
+            when {
+                expression {
+                    // Execute only if Terraform Apply was successful
+                    return env.TERRAFORM_APPLY_STATUS == 'true'
+                }
+            }
+            steps {
+                sh '''
+                # Example for AWS EKS
+                aws eks update-kubeconfig --region ${AWS_REGION} --name 'myvpro-EKS-Cluster'
+                '''
+            }
+        }
+
+        stage('Install Ingress Controller') {
+
+            when {
+                expression {
+                    // Execute only if Terraform Apply was successful
+                    return env.TERRAFORM_APPLY_STATUS == 'true'
+              }
+            }
+
+            steps {
+                sh '''
+                # Install NGINX Ingress Controller using kubectl
+                kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/cloud/deploy.yaml
+                '''
+            }
+
+            
+
+        }
+
+
+                
         }
 }
